@@ -4,10 +4,13 @@ import android.util.Log
 import com.routinely.routinely.R
 import com.routinely.routinely.data.auth.HttpRoutes
 import com.routinely.routinely.data.auth.extensions.toCreateAccountResult
+import com.routinely.routinely.data.auth.extensions.toCreateNewPasswordResult
 import com.routinely.routinely.data.auth.extensions.toForgotPasswordResult
 import com.routinely.routinely.data.auth.extensions.toSignInResult
 import com.routinely.routinely.data.auth.extensions.toValidateCodeResult
 import com.routinely.routinely.data.auth.model.CreateAccountResult
+import com.routinely.routinely.data.auth.model.CreateNewPasswordRequest
+import com.routinely.routinely.data.auth.model.CreateNewPasswordResult
 import com.routinely.routinely.data.auth.model.ForgotPasswordRequest
 import com.routinely.routinely.data.auth.model.ForgotPasswordResult
 import com.routinely.routinely.data.auth.model.LoginRequest
@@ -83,6 +86,24 @@ internal class AuthApiImpl(
         }
     }
 
+    override suspend fun createNewPassword(createNewPasswordRequest: CreateNewPasswordRequest): CreateNewPasswordResult {
+        return try {
+            Log.i("testeLogin", "validateCode: $createNewPasswordRequest")
+            val t = client.post(HttpRoutes.VALIDATE_CODE) {
+                setBody(createNewPasswordRequest)
+                contentType(ContentType.Application.Json)
+            }.toCreateNewPasswordResult()
+            Log.i("testeLogin", "retorno: $t")
+            return t
+        } catch(e: ResponseException){
+            Log.i("testeLogin", "Erro 1: $e")
+            handleCreateNewPasswordError(e.response.status)
+        } catch(e: Exception){
+            Log.i("testeLogin", "Erro 2: $e")
+            handleCreateNewPasswordError(HttpStatusCode(900, e.message ?: "Unknown Exception"))
+        }
+    }
+
     private fun handleSignInErrorResponse(httpStatusCode: HttpStatusCode): SignInResult {
         println("Error SignIn: ${httpStatusCode.description}")
         return SignInResult.DefaultError
@@ -100,5 +121,10 @@ internal class AuthApiImpl(
     private fun handleValidateCodeError(httpStatusCode: HttpStatusCode): ValidateCodeResult {
         println("Error: ${httpStatusCode.description}")
         return ValidateCodeResult.DefaultError
+    }
+
+    private fun handleCreateNewPasswordError(httpStatusCode: HttpStatusCode): CreateNewPasswordResult {
+        println("Error: ${httpStatusCode.description}")
+        return CreateNewPasswordResult.DefaultError
     }
 }

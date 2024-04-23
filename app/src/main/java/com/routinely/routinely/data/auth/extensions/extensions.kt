@@ -3,6 +3,8 @@ package com.routinely.routinely.data.auth.extensions
 import android.util.Log
 import com.routinely.routinely.R
 import com.routinely.routinely.data.auth.model.CreateAccountResult
+import com.routinely.routinely.data.auth.model.CreateNewPasswordResponse
+import com.routinely.routinely.data.auth.model.CreateNewPasswordResult
 import com.routinely.routinely.data.auth.model.ForgotPasswordResponse
 import com.routinely.routinely.data.auth.model.ForgotPasswordResult
 import com.routinely.routinely.data.auth.model.LoginResponse
@@ -76,6 +78,22 @@ suspend fun HttpResponse.toValidateCodeResult() : ValidateCodeResult{
         }
         else -> {
             ValidateCodeResult.DefaultError
+        }
+    }
+}
+
+suspend fun HttpResponse.toCreateNewPasswordResult() : CreateNewPasswordResult{
+    return when(this.status) {
+        HttpStatusCode.Created -> {
+            val response = this.body<CreateNewPasswordResponse>()
+            Log.i("testeLogin", "toValidateCodeResult: $response")
+            CreateNewPasswordResult.Success
+        }
+        HttpStatusCode.NotFound -> {
+            CreateNewPasswordResult.Error(R.string.api_forgot_password_account_not_found)
+        }
+        else -> {
+            CreateNewPasswordResult.DefaultError
         }
     }
 }

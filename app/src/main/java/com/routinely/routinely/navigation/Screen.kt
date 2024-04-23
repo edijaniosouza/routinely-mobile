@@ -3,7 +3,7 @@ package com.routinely.routinely.navigation
 sealed class Screen(val route: String) {
     data object Login: Screen("login_screen")
     data object CreateAccount: Screen("create_account_screen")
-    data object NewPasswordScreen: Screen("new_password_screen")
+    data object NewPasswordScreen: Screen("new_password_screen/{accountId}/{code}")
     data object ForgotPasswordScreen: Screen("forgot_password_screen")
     data object VerificationCodeScreen: Screen("verification_code_screen/{accountId}")
     data object HomeScreen: Screen("home_screen")

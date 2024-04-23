@@ -1,6 +1,8 @@
 package com.routinely.routinely.data.auth.api
 
 import com.routinely.routinely.data.auth.model.CreateAccountResult
+import com.routinely.routinely.data.auth.model.CreateNewPasswordRequest
+import com.routinely.routinely.data.auth.model.CreateNewPasswordResult
 import com.routinely.routinely.data.auth.model.ForgotPasswordRequest
 import com.routinely.routinely.data.auth.model.ForgotPasswordResult
 import com.routinely.routinely.data.auth.model.LoginRequest
@@ -16,4 +18,5 @@ interface AuthApi {
 
     suspend fun forgotPassword(forgotPasswordRequest: ForgotPasswordRequest) : ForgotPasswordResult
     suspend fun validateCode(code: ValidateCodeRequest) : ValidateCodeResult
+    suspend fun createNewPassword(createNewPasswordRequest: CreateNewPasswordRequest): CreateNewPasswordResult
 }

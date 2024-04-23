@@ -29,6 +29,7 @@ import com.routinely.routinely.changepassword.ForgotPasswordViewModel
 import com.routinely.routinely.changepassword.VerificationCodeScreen
 import com.routinely.routinely.changepassword.VerificationCodeViewModel
 import com.routinely.routinely.data.auth.model.ApiResponse
+import com.routinely.routinely.data.auth.model.CreateNewPasswordRequest
 import com.routinely.routinely.data.auth.model.ForgotPasswordRequest
 import com.routinely.routinely.data.auth.model.ValidateCodeRequest
 import com.routinely.routinely.home.HomeScreen
@@ -122,7 +123,7 @@ fun SetupNavGraph(
             }
         )
         verificationCodeRoute(
-            navigateToSetNewPasswordScreen = {
+            navigateToSetNewPasswordScreen = { _, _ ->
                 navController.navigate(Screen.NewPasswordScreen.route)
             }
         )
@@ -235,19 +236,31 @@ fun NavGraphBuilder.createAccountRoute(
 fun NavGraphBuilder.newPasswordRoute(
     navigateToLoginScreen: () -> Unit
 ) {
-    composable(route = Screen.NewPasswordScreen.route) { navBackStackEntry ->
+    composable(
+        route = Screen.NewPasswordScreen.route,
+        arguments = listOf(
+            navArgument("accountId") { type = NavType.StringType },
+            navArgument("code") { type = NavType.StringType }
+        ),
+    ) { navBackStackEntry ->
+        val accountId = navBackStackEntry.arguments?.getString("accountId") ?: ""
+        val code = navBackStackEntry.arguments?.getString("code") ?: ""
         val viewModel: CreateNewPasswordViewModel = koinViewModel()
-        val apiErrorMessage by viewModel.apiErrorMessage.collectAsState()
-        val shouldGoToNextScreen by viewModel.shouldGoToNextScreen
+        val createNewPasswordResult by viewModel.createNewPasswordResult.collectAsState()
+
         CreateNewPasswordScreen(
             onUpdatePasswordClicked = { password: String, confirmPassword: String ->
-                viewModel.verifyAllConditions(password, confirmPassword)
+                viewModel.createNewPassword(
+                    CreateNewPasswordRequest(
+                        password = password,
+                        accountId = accountId,
+                        code = code
+                    ),confirmPassword
+                )
             },
             passwordStateValidation = {
                 viewModel.passwordState(it)
             },
-            apiErrorMessage = apiErrorMessage,
-            shouldGoToNextScreen = shouldGoToNextScreen,
             navigateToLoginScreen = {
                 navigateToScreenOnlyIfResumed(
                     navBackStackEntry,
@@ -256,7 +269,8 @@ fun NavGraphBuilder.newPasswordRoute(
             },
             confirmPasswordStateValidation = { password, confirmPassword ->
                 viewModel.confirmPasswordState(password, confirmPassword)
-            }
+            },
+            createNewPasswordResult = createNewPasswordResult
         )
     }
 }
@@ -288,7 +302,7 @@ fun NavGraphBuilder.forgotPasswordRoute(
 }
 
 fun NavGraphBuilder.verificationCodeRoute(
-    navigateToSetNewPasswordScreen: () -> Unit,
+    navigateToSetNewPasswordScreen: (accountId: String, code: String) -> Unit,
 ) {
     composable(
         route = Screen.VerificationCodeScreen.route,
@@ -306,9 +320,11 @@ fun NavGraphBuilder.verificationCodeRoute(
             codeStateValidation = { code: String ->
                 viewModel.codeState(code)
             },
-            navigateToSetNewPasswordScreen = { x, y ->
-                Log.i("testeLogin", "verification navigate to password screen: $x e $y")
-                navigateToScreenOnlyIfResumed(backStackEntry, navigateToSetNewPasswordScreen)
+            navigateToSetNewPasswordScreen = { accountId, code ->
+                Log.i("testeLogin", "verification navigate to password screen: $accountId e $code")
+                navigateToScreenOnlyIfResumed(
+                    backStackEntry
+                ) { navigateToSetNewPasswordScreen(accountId, code) }
             },
             validateCodeResult = validateCodeResult,
         )
@@ -321,7 +337,7 @@ fun NavGraphBuilder.homeScreenRoute(
     navigateToLoginScreen: () -> Unit,
     navigateToEditScreen: (taskId: Int) -> Unit,
 ) {
-    composable(route = Screen.HomeScreen.route) {navBackStackEntry ->
+    composable(route = Screen.HomeScreen.route) { navBackStackEntry ->
         val viewModel: HomeViewModel = koinViewModel()
         val menuItems = listOf(
             MenuItem(
@@ -389,7 +405,7 @@ fun NavGraphBuilder.addTaskScreenRoute(
     navigateToHomeScreen: () -> Unit,
     navigateToLoginScreen: () -> Unit,
 ) {
-    composable(route = Screen.AddTaskScreen.route) {navBackStackEntry ->
+    composable(route = Screen.AddTaskScreen.route) { navBackStackEntry ->
         val viewModel: AddTaskViewModel = koinViewModel()
         val menuItems = listOf(
             MenuItem(

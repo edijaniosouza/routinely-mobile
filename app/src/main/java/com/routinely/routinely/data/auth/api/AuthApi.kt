@@ -6,6 +6,8 @@ import com.routinely.routinely.data.auth.model.ForgotPasswordResult
 import com.routinely.routinely.data.auth.model.LoginRequest
 import com.routinely.routinely.data.auth.model.RegisterRequest
 import com.routinely.routinely.data.auth.model.SignInResult
+import com.routinely.routinely.data.auth.model.ValidateCodeRequest
+import com.routinely.routinely.data.auth.model.ValidateCodeResult
 
 interface AuthApi {
     suspend fun registerUser(registerRequest: RegisterRequest) : CreateAccountResult
@@ -13,4 +15,5 @@ interface AuthApi {
     suspend fun loginUser(loginRequest: LoginRequest) : SignInResult
 
     suspend fun forgotPassword(forgotPasswordRequest: ForgotPasswordRequest) : ForgotPasswordResult
+    suspend fun validateCode(code: ValidateCodeRequest) : ValidateCodeResult
 }

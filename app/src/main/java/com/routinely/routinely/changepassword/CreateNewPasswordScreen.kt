@@ -1,5 +1,6 @@
 package com.routinely.routinely.changepassword
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,6 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -29,6 +31,7 @@ import com.routinely.routinely.ui.components.UpdatePasswordButton
 import com.routinely.routinely.ui.theme.RoutinelyTheme
 import com.routinely.routinely.util.validators.PasswordInputValid
 import kotlinx.coroutines.delay
+import kotlin.reflect.jvm.internal.impl.descriptors.Visibilities.Local
 
 @Composable
 fun CreateNewPasswordScreen(
@@ -112,8 +115,14 @@ fun CreateNewPasswordScreen(
             )
         }
     }
+
+    val context = LocalContext.current
+
     LaunchedEffect(key1 = shouldGoToNextScreen) {
+
         if(shouldGoToNextScreen) {
+            Toast.makeText(context,
+                context.resources.getString(R.string.reset_password_success), Toast.LENGTH_SHORT).show()
             delay(2000)
             navigateToLoginScreen()
         }

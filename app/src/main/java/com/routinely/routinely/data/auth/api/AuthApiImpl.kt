@@ -1,16 +1,20 @@
 package com.routinely.routinely.data.auth.api
 
+import android.util.Log
 import com.routinely.routinely.R
 import com.routinely.routinely.data.auth.HttpRoutes
 import com.routinely.routinely.data.auth.extensions.toCreateAccountResult
 import com.routinely.routinely.data.auth.extensions.toForgotPasswordResult
 import com.routinely.routinely.data.auth.extensions.toSignInResult
+import com.routinely.routinely.data.auth.extensions.toValidateCodeResult
 import com.routinely.routinely.data.auth.model.CreateAccountResult
 import com.routinely.routinely.data.auth.model.ForgotPasswordRequest
 import com.routinely.routinely.data.auth.model.ForgotPasswordResult
 import com.routinely.routinely.data.auth.model.LoginRequest
 import com.routinely.routinely.data.auth.model.RegisterRequest
 import com.routinely.routinely.data.auth.model.SignInResult
+import com.routinely.routinely.data.auth.model.ValidateCodeRequest
+import com.routinely.routinely.data.auth.model.ValidateCodeResult
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.ResponseException
 import io.ktor.client.request.post
@@ -61,6 +65,24 @@ internal class AuthApiImpl(
         }
     }
 
+    override suspend fun validateCode(validateCodeRequest: ValidateCodeRequest): ValidateCodeResult {
+        return try {
+            Log.i("testeLogin", "validateCode: $validateCodeRequest")
+            val t = client.post(HttpRoutes.VALIDATE_CODE) {
+                setBody(validateCodeRequest)
+                contentType(ContentType.Application.Json)
+            }.toValidateCodeResult()
+            Log.i("testeLogin", "retorno: $t")
+            return t
+        } catch(e: ResponseException){
+            Log.i("testeLogin", "Erro 1: $e")
+            handleValidateCodeError(e.response.status)
+        } catch(e: Exception){
+            Log.i("testeLogin", "Erro 2: $e")
+            handleValidateCodeError(HttpStatusCode(900, e.message ?: "Unknown Exception"))
+        }
+    }
+
     private fun handleSignInErrorResponse(httpStatusCode: HttpStatusCode): SignInResult {
         println("Error SignIn: ${httpStatusCode.description}")
         return SignInResult.DefaultError
@@ -73,5 +95,10 @@ internal class AuthApiImpl(
     private fun handleForgotPasswordError(httpStatusCode: HttpStatusCode): ForgotPasswordResult {
         println("Error: ${httpStatusCode.description}")
         return ForgotPasswordResult.DefaultError
+    }
+
+    private fun handleValidateCodeError(httpStatusCode: HttpStatusCode): ValidateCodeResult {
+        println("Error: ${httpStatusCode.description}")
+        return ValidateCodeResult.DefaultError
     }
 }

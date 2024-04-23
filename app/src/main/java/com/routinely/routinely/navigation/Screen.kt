@@ -5,7 +5,7 @@ sealed class Screen(val route: String) {
     data object CreateAccount: Screen("create_account_screen")
     data object NewPasswordScreen: Screen("new_password_screen")
     data object ForgotPasswordScreen: Screen("forgot_password_screen")
-    data object VerificationCodeScreen: Screen("verification_code_screen")
+    data object VerificationCodeScreen: Screen("verification_code_screen/{accountId}")
     data object HomeScreen: Screen("home_screen")
     data object AddTaskScreen: Screen("add_task_screen")
     data object SplashScreen: Screen("splash_screen")

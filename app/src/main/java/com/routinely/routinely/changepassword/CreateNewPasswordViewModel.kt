@@ -4,6 +4,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.routinely.routinely.R
+import com.routinely.routinely.data.auth.api.AuthApi
+import com.routinely.routinely.data.auth.model.ValidateCodeResult
 import com.routinely.routinely.ui.components.isPasswordValid
 import com.routinely.routinely.util.validators.PasswordInputValid
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -11,7 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class CreateNewPasswordViewModel(
-    //private val newPasswordApi: SetNewPasswordRequest,
+    private val authApi: AuthApi,
 ) : ViewModel() {
 
     private val _apiErrorMessage = MutableStateFlow(listOf<String>())
@@ -44,7 +46,7 @@ class CreateNewPasswordViewModel(
 
     fun verifyAllConditions(password: String, confirmPassword: String) : PasswordInputValid {
         viewModelScope.launch {
-            if(confirmPasswordState(password, confirmPassword) == PasswordInputValid.Valid){
+            if(confirmPasswordState(password, confirmPassword) == PasswordInputValid.Valid && passwordState(password) == PasswordInputValid.Valid){
                 shouldGoToNextScreen.value = true
             }
         }

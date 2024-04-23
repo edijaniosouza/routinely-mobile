@@ -33,6 +33,7 @@
     <string name="create_new_password">Criar nova senha</string>
     <string name="chose_a_new_password">Escolha uma nova senha abaixo ela precisa ser diferente da senha anterior</string>
     <string name="reset_password">Redefinir senha</string>
+    <string name="reset_password_success">Redefinição de senha concluida com sucesso</string>
     <string name="type_the_code">Insira o código de verificação enviado no e-mail</string>
     <string name="didnt_receive">Não recebeu?</string>
     <string name="send_again">Enviar novamente</string>

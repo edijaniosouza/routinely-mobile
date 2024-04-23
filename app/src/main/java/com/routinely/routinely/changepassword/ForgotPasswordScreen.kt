@@ -47,7 +47,6 @@ fun ForgotPasswordScreen(
     var showLoading by rememberSaveable { mutableStateOf(false) }
     var apiErrorMessage by rememberSaveable { mutableIntStateOf(0) }
 
-
     Column(
         modifier = Modifier
             .padding(16.dp)

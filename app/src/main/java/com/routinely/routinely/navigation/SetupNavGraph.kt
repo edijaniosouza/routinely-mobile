@@ -12,7 +12,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -153,19 +155,31 @@ fun NavGraphBuilder.loginRoute(
     navigateToCreateAccountScreen: () -> Unit,
     navigateToForgotPasswordScreen: () -> Unit,
 ) {
-    composable(route = Screen.Login.route) {navBackStackEntry->
-
+    composable(route = Screen.Login.route) { navBackStackEntry ->
         val viewModel: LoginViewModel = koinViewModel()
-        val authenticated by viewModel.authenticated.collectAsState()
         val signInResult by viewModel.signInResult.collectAsState()
         LoginScreen(
-            authenticated = authenticated,
             loginWithEmailAndPassword = {
                 viewModel.loginWithEmailAndPassword(it)
             },
-            navigateToHomeScreen = navigateToHomeScreen,
-            navigateToCreateAccountScreen = navigateToCreateAccountScreen,
-            navigateToForgotPasswordScreen = navigateToForgotPasswordScreen,
+            navigateToHomeScreen = {
+                navigateToScreenOnlyIfResumed(
+                    navBackStackEntry,
+                    navigateToHomeScreen
+                )
+            },
+            navigateToCreateAccountScreen = {
+                navigateToScreenOnlyIfResumed(
+                    navBackStackEntry,
+                    navigateToCreateAccountScreen
+                )
+            },
+            navigateToForgotPasswordScreen = {
+                navigateToScreenOnlyIfResumed(
+                    navBackStackEntry,
+                    navigateToForgotPasswordScreen
+                )
+            },
             emailStateValidation = {
                 viewModel.emailState(it)
             },
@@ -180,11 +194,12 @@ fun NavGraphBuilder.loginRoute(
     }
 }
 
+
 fun NavGraphBuilder.createAccountRoute(
     navigateToLoginScreen: () -> Unit,
     onAlreadyHaveAnAccountClicked: () -> Unit,
 ) {
-    composable(route = Screen.CreateAccount.route) {
+    composable(route = Screen.CreateAccount.route) { navBackStackEntry ->
         val viewModel: CreateAccountViewModel = koinViewModel()
 
         val createAccountResult by viewModel.createAccountResult.collectAsState()
@@ -195,7 +210,12 @@ fun NavGraphBuilder.createAccountRoute(
             },
             onAlreadyHaveAnAccountClicked = onAlreadyHaveAnAccountClicked,
             createAccountResult = createAccountResult,
-            navigateToLoginScreen = navigateToLoginScreen,
+            navigateToLoginScreen = {
+                navigateToScreenOnlyIfResumed(
+                    navBackStackEntry,
+                    navigateToLoginScreen
+                )
+            },
             nameStateValidation = {
                 viewModel.nameState(it)
             },
@@ -215,7 +235,7 @@ fun NavGraphBuilder.createAccountRoute(
 fun NavGraphBuilder.newPasswordRoute(
     navigateToLoginScreen: () -> Unit
 ) {
-    composable(route = Screen.NewPasswordScreen.route) {
+    composable(route = Screen.NewPasswordScreen.route) { navBackStackEntry ->
         val viewModel: CreateNewPasswordViewModel = koinViewModel()
         val apiErrorMessage by viewModel.apiErrorMessage.collectAsState()
         val shouldGoToNextScreen by viewModel.shouldGoToNextScreen
@@ -228,7 +248,12 @@ fun NavGraphBuilder.newPasswordRoute(
             },
             apiErrorMessage = apiErrorMessage,
             shouldGoToNextScreen = shouldGoToNextScreen,
-            navigateToLoginScreen = navigateToLoginScreen,
+            navigateToLoginScreen = {
+                navigateToScreenOnlyIfResumed(
+                    navBackStackEntry,
+                    navigateToLoginScreen
+                )
+            },
             confirmPasswordStateValidation = { password, confirmPassword ->
                 viewModel.confirmPasswordState(password, confirmPassword)
             }
@@ -239,14 +264,17 @@ fun NavGraphBuilder.newPasswordRoute(
 fun NavGraphBuilder.forgotPasswordRoute(
     navigateToCodeVerificationScreen: (accountId: String) -> Unit,
 ) {
-    composable(route = Screen.ForgotPasswordScreen.route) {
+    composable(route = Screen.ForgotPasswordScreen.route) { navBackStackEntry ->
         val viewModel: ForgotPasswordViewModel = koinViewModel()
         val forgotPasswordResult by viewModel.forgotPasswordResult.collectAsState()
 
         ForgotPasswordScreen(
-            navigateToCodeVerificationScreen = {accountId ->
+            navigateToCodeVerificationScreen = { accountId ->
                 Log.i("testeLogin", "forgotPasswordRoute: $accountId")
-                navigateToCodeVerificationScreen(accountId)
+                navigateToScreenOnlyIfResumed(
+                    navBackStackEntry
+                ) { navigateToCodeVerificationScreen(accountId) }
+
             },
             onResetPasswordClicked = { forgotPasswordRequest: ForgotPasswordRequest ->
                 viewModel.sendEmail(forgotPasswordRequest)
@@ -262,9 +290,10 @@ fun NavGraphBuilder.forgotPasswordRoute(
 fun NavGraphBuilder.verificationCodeRoute(
     navigateToSetNewPasswordScreen: () -> Unit,
 ) {
-    composable(route =Screen.VerificationCodeScreen.route,
-        arguments = listOf(navArgument("accountId"){type = NavType.StringType})
-    ) {backStackEntry ->
+    composable(
+        route = Screen.VerificationCodeScreen.route,
+        arguments = listOf(navArgument("accountId") { type = NavType.StringType })
+    ) { backStackEntry ->
         val viewModel: VerificationCodeViewModel = koinViewModel()
         val validateCodeResult by viewModel.validateCodeResult.collectAsState()
         val accountId = backStackEntry.arguments?.getString("accountId") ?: ""
@@ -277,9 +306,9 @@ fun NavGraphBuilder.verificationCodeRoute(
             codeStateValidation = { code: String ->
                 viewModel.codeState(code)
             },
-            navigateToSetNewPasswordScreen = {x, y ->
+            navigateToSetNewPasswordScreen = { x, y ->
                 Log.i("testeLogin", "verification navigate to password screen: $x e $y")
-                navigateToSetNewPasswordScreen()
+                navigateToScreenOnlyIfResumed(backStackEntry, navigateToSetNewPasswordScreen)
             },
             validateCodeResult = validateCodeResult,
         )
@@ -292,7 +321,7 @@ fun NavGraphBuilder.homeScreenRoute(
     navigateToLoginScreen: () -> Unit,
     navigateToEditScreen: (taskId: Int) -> Unit,
 ) {
-    composable(route = Screen.HomeScreen.route) {
+    composable(route = Screen.HomeScreen.route) {navBackStackEntry ->
         val viewModel: HomeViewModel = koinViewModel()
         val menuItems = listOf(
             MenuItem(
@@ -311,7 +340,7 @@ fun NavGraphBuilder.homeScreenRoute(
                 text = stringResource(R.string.menu_logout),
                 onItemClick = {
                     viewModel.logout()
-                    navigateToLoginScreen()
+                    navigateToScreenOnlyIfResumed(navBackStackEntry, navigateToLoginScreen)
                 }
             ),
         )
@@ -360,7 +389,7 @@ fun NavGraphBuilder.addTaskScreenRoute(
     navigateToHomeScreen: () -> Unit,
     navigateToLoginScreen: () -> Unit,
 ) {
-    composable(route = Screen.AddTaskScreen.route) {
+    composable(route = Screen.AddTaskScreen.route) {navBackStackEntry ->
         val viewModel: AddTaskViewModel = koinViewModel()
         val menuItems = listOf(
             MenuItem(
@@ -379,7 +408,7 @@ fun NavGraphBuilder.addTaskScreenRoute(
                 text = stringResource(R.string.menu_logout),
                 onItemClick = {
                     viewModel.logout()
-                    navigateToLoginScreen()
+                    navigateToScreenOnlyIfResumed(navBackStackEntry, navigateToLoginScreen)
                 }
             ),
         )
@@ -441,7 +470,7 @@ fun NavGraphBuilder.editTaskScreenRoute(
                 text = stringResource(R.string.menu_logout),
                 onItemClick = {
                     viewModel.logout()
-                    navigateToLoginScreen()
+                    navigateToScreenOnlyIfResumed(backStackEntry, navigateToLoginScreen)
                 }
             ),
         )
@@ -506,5 +535,18 @@ fun NavGraphBuilder.splashScreenRoute(
         SplashScreen(
             onEmailLoginClicked = { onEmailLoginClicked() }
         )
+    }
+}
+
+// Verifica se a screen esta no estado resumed, para não haver multiplos clicks
+private fun NavBackStackEntry.lifecycleIsresumed() =
+    this.lifecycle.currentState == Lifecycle.State.RESUMED
+
+private fun navigateToScreenOnlyIfResumed(
+    navBackStackEntry: NavBackStackEntry,
+    navigateToHomeScreen: () -> Unit
+) {
+    if (navBackStackEntry.lifecycleIsresumed()) {
+        navigateToHomeScreen()
     }
 }

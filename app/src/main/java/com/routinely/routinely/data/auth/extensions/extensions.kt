@@ -1,6 +1,5 @@
 package com.routinely.routinely.data.auth.extensions
 
-import android.util.Log
 import com.routinely.routinely.R
 import com.routinely.routinely.data.auth.model.CreateAccountResult
 import com.routinely.routinely.data.auth.model.CreateNewPasswordResponse
@@ -70,11 +69,10 @@ suspend fun HttpResponse.toValidateCodeResult() : ValidateCodeResult{
     return when(this.status) {
         HttpStatusCode.Created -> {
             val response = this.body<ValidateCodeResponse>()
-            Log.i("testeLogin", "toValidateCodeResult: $response")
             ValidateCodeResult.Success(response.message)
         }
         HttpStatusCode.NotFound -> {
-            ValidateCodeResult.Error(R.string.api_forgot_password_account_not_found)
+            ValidateCodeResult.Error(R.string.api_validate_code_invalid)
         }
         else -> {
             ValidateCodeResult.DefaultError
@@ -84,13 +82,12 @@ suspend fun HttpResponse.toValidateCodeResult() : ValidateCodeResult{
 
 suspend fun HttpResponse.toCreateNewPasswordResult() : CreateNewPasswordResult{
     return when(this.status) {
-        HttpStatusCode.Created -> {
-            val response = this.body<CreateNewPasswordResponse>()
-            Log.i("testeLogin", "toValidateCodeResult: $response")
-            CreateNewPasswordResult.Success
+        HttpStatusCode.OK -> {
+            val message = this.body<CreateNewPasswordResponse>()
+            CreateNewPasswordResult.Success(message.message)
         }
-        HttpStatusCode.NotFound -> {
-            CreateNewPasswordResult.Error(R.string.api_forgot_password_account_not_found)
+        HttpStatusCode.Unauthorized -> {
+            CreateNewPasswordResult.Error(R.string.api_validate_code_invalid)
         }
         else -> {
             CreateNewPasswordResult.DefaultError

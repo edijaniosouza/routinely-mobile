@@ -39,16 +39,6 @@ class CreateNewPasswordViewModel(
         }
     }
 
-//    fun verifyAllConditions(password: String, confirmPassword: String) : PasswordInputValid {
-//        viewModelScope.launch {
-//            if(confirmPasswordState(password, confirmPassword) == PasswordInputValid.Valid && passwordState(password) == PasswordInputValid.Valid){
-//
-//            }
-//        }
-//        return confirmPasswordState(password, confirmPassword)
-//    }
-
-
     private val _createNewPasswordResult =
         MutableStateFlow<CreateNewPasswordResult>(CreateNewPasswordResult.Empty)
     val createNewPasswordResult = _createNewPasswordResult.asStateFlow()

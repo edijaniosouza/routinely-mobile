@@ -23,20 +23,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.routinely.routinely.R
 import com.routinely.routinely.data.auth.model.CreateNewPasswordResult
-import com.routinely.routinely.data.auth.model.ValidateCodeResult
 import com.routinely.routinely.ui.components.IndeterminateCircularIndicator
 import com.routinely.routinely.ui.components.LabelError
 import com.routinely.routinely.ui.components.PasswordTextField
 import com.routinely.routinely.ui.components.UpdatePasswordButton
-import com.routinely.routinely.ui.theme.RoutinelyTheme
 import com.routinely.routinely.util.validators.PasswordInputValid
-import kotlinx.coroutines.delay
-import kotlin.reflect.jvm.internal.impl.descriptors.Visibilities.Local
 
 @Composable
 fun CreateNewPasswordScreen(
@@ -49,7 +44,11 @@ fun CreateNewPasswordScreen(
     var password by rememberSaveable { mutableStateOf("") }
     var confirmPassword by rememberSaveable { mutableStateOf("") }
     var passwordState by rememberSaveable { mutableStateOf<PasswordInputValid>(PasswordInputValid.Empty) }
-    var confirmPasswordState by rememberSaveable { mutableStateOf<PasswordInputValid>(PasswordInputValid.Empty) }
+    var confirmPasswordState by rememberSaveable {
+        mutableStateOf<PasswordInputValid>(
+            PasswordInputValid.Empty
+        )
+    }
     var showApiErrors by rememberSaveable { mutableStateOf(false) }
     var showFieldError by rememberSaveable { mutableStateOf(false) }
     var showLoading by rememberSaveable { mutableStateOf(false) }
@@ -59,12 +58,12 @@ fun CreateNewPasswordScreen(
         modifier = Modifier
             .padding(16.dp)
             .fillMaxSize(),
-    ){
+    ) {
         Column(
             modifier = Modifier
                 .weight(0.25f)
                 .fillMaxWidth()
-        ){
+        ) {
             Image(
                 painter = painterResource(R.drawable.logo_vertical),
                 contentDescription = stringResource(R.string.desc_vertical_logo),
@@ -77,7 +76,7 @@ fun CreateNewPasswordScreen(
             modifier = Modifier
                 .weight(0.60f)
                 .fillMaxWidth(),
-        ){
+        ) {
             Text(
                 text = stringResource(R.string.create_new_password),
                 color = Color.Black, fontSize = 25.sp,
@@ -106,42 +105,53 @@ fun CreateNewPasswordScreen(
                 value = confirmPassword,
                 error = confirmPasswordState,
             )
-            if(showApiErrors){
+            if (showApiErrors) {
                 LabelError(labelRes = stringResource(id = apiErrorMessage))
             }
         }
 
         Column(
             modifier = Modifier
-                .weight(0.15f)) {
+                .weight(0.15f)
+        ) {
             UpdatePasswordButton(
                 onLoginClick = {
                     onUpdatePasswordClicked(password, confirmPassword)
                 },
+                enable = !showLoading
+                        && passwordState == PasswordInputValid.Valid
+                        && confirmPasswordState == PasswordInputValid.Valid
             )
         }
     }
+    val ctx = LocalContext.current
+    val confirmationMessage = rememberSaveable{ mutableStateOf("") }
+    if (confirmationMessage.value != "") Toast.makeText(ctx, confirmationMessage.value, Toast.LENGTH_SHORT).show()
 
-    LaunchedEffect(key1 = createNewPasswordResult){
-        when(createNewPasswordResult) {
+    LaunchedEffect(key1 = createNewPasswordResult) {
+        when (createNewPasswordResult) {
             is CreateNewPasswordResult.Success -> {
                 showApiErrors = false
                 showLoading = false
                 showFieldError = false
+                confirmationMessage.value = createNewPasswordResult.message
                 navigateToLoginScreen()
             }
+
             is CreateNewPasswordResult.Error -> {
                 apiErrorMessage = createNewPasswordResult.message
                 showApiErrors = true
                 showLoading = false
                 showFieldError = true
             }
+
             is CreateNewPasswordResult.DefaultError -> {
                 apiErrorMessage = R.string.api_unexpected_error
                 showApiErrors = true
                 showLoading = false
                 showFieldError = false
             }
+
             is CreateNewPasswordResult.Loading -> {
                 showLoading = true
                 showApiErrors = false
@@ -151,7 +161,7 @@ fun CreateNewPasswordScreen(
         }
     }
 
-    if(showLoading) {
+    if (showLoading) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center

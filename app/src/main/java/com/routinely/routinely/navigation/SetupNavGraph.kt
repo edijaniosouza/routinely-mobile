@@ -1,6 +1,5 @@
 package com.routinely.routinely.navigation
 
-import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -118,13 +117,13 @@ fun SetupNavGraph(
             }
         )
         forgotPasswordRoute(
-            navigateToCodeVerificationScreen = {
-                navController.navigate(Screen.VerificationCodeScreen.route)
+            navigateToCodeVerificationScreen = {accountId ->
+                navController.navigate(Screen.VerificationCodeScreen.withArgs(accountId))
             }
         )
         verificationCodeRoute(
-            navigateToSetNewPasswordScreen = { _, _ ->
-                navController.navigate(Screen.NewPasswordScreen.route)
+            navigateToSetNewPasswordScreen = { accountId, code ->
+                navController.navigate(Screen.NewPasswordScreen.withArgs(accountId, code))
             }
         )
         newPasswordRoute(
@@ -258,8 +257,8 @@ fun NavGraphBuilder.newPasswordRoute(
                     ),confirmPassword
                 )
             },
-            passwordStateValidation = {
-                viewModel.passwordState(it)
+            passwordStateValidation = {password ->
+                viewModel.passwordState(password)
             },
             navigateToLoginScreen = {
                 navigateToScreenOnlyIfResumed(
@@ -284,7 +283,6 @@ fun NavGraphBuilder.forgotPasswordRoute(
 
         ForgotPasswordScreen(
             navigateToCodeVerificationScreen = { accountId ->
-                Log.i("testeLogin", "forgotPasswordRoute: $accountId")
                 navigateToScreenOnlyIfResumed(
                     navBackStackEntry
                 ) { navigateToCodeVerificationScreen(accountId) }
@@ -307,23 +305,21 @@ fun NavGraphBuilder.verificationCodeRoute(
     composable(
         route = Screen.VerificationCodeScreen.route,
         arguments = listOf(navArgument("accountId") { type = NavType.StringType })
-    ) { backStackEntry ->
+    ) { navBackStackEntry ->
         val viewModel: VerificationCodeViewModel = koinViewModel()
         val validateCodeResult by viewModel.validateCodeResult.collectAsState()
-        val accountId = backStackEntry.arguments?.getString("accountId") ?: ""
-        Log.i("testeLogin", "verificationCodeRoute: $accountId")
+        val accountId = navBackStackEntry.arguments?.getString("accountId") ?: ""
+
         VerificationCodeScreen(
-            accountId = accountId,
-            onConfirmResetPasswordClicked = { validateCodeRequest: ValidateCodeRequest ->
-                viewModel.codeVerification(validateCodeRequest)
+            onConfirmResetPasswordClicked = { code ->
+                viewModel.codeVerification(ValidateCodeRequest(code = code, accountId = accountId))
             },
             codeStateValidation = { code: String ->
                 viewModel.codeState(code)
             },
-            navigateToSetNewPasswordScreen = { accountId, code ->
-                Log.i("testeLogin", "verification navigate to password screen: $accountId e $code")
+            navigateToSetNewPasswordScreen = { code ->
                 navigateToScreenOnlyIfResumed(
-                    backStackEntry
+                    navBackStackEntry
                 ) { navigateToSetNewPasswordScreen(accountId, code) }
             },
             validateCodeResult = validateCodeResult,

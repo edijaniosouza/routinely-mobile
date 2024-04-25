@@ -17,6 +17,6 @@ interface AuthApi {
     suspend fun loginUser(loginRequest: LoginRequest) : SignInResult
 
     suspend fun forgotPassword(forgotPasswordRequest: ForgotPasswordRequest) : ForgotPasswordResult
-    suspend fun validateCode(code: ValidateCodeRequest) : ValidateCodeResult
+    suspend fun validateCode(validateCodeRequest: ValidateCodeRequest) : ValidateCodeResult
     suspend fun createNewPassword(createNewPasswordRequest: CreateNewPasswordRequest): CreateNewPasswordResult
 }

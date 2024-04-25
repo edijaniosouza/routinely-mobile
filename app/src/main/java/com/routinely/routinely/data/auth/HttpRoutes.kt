@@ -7,4 +7,5 @@ object HttpRoutes {
     const val LOGIN = "$BASE_URL/auth"
     const val FORGOT_PASSWORD = "$BASE_URL/auth/resetpassword"
     const val VALIDATE_CODE = "$BASE_URL/auth/validatecode"
+    const val CHANGE_PASSWORD = "$BASE_URL/auth/changepassword"
 }

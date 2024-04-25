@@ -109,7 +109,7 @@ fun ForgotPasswordScreen(
                 onResetPasswordClick = {
                     onResetPasswordClicked(ForgotPasswordRequest(email = email))
                 },
-                isEmailValid = emailState == EmailInputValid.Valid,
+                isEmailValid = emailState == EmailInputValid.Valid && !showLoading,
             )
         }
     }

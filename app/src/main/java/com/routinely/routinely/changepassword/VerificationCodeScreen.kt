@@ -27,9 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavBackStackEntry
 import com.routinely.routinely.R
-import com.routinely.routinely.data.auth.model.ValidateCodeRequest
 import com.routinely.routinely.data.auth.model.ValidateCodeResult
 import com.routinely.routinely.ui.components.IndeterminateCircularIndicator
 import com.routinely.routinely.ui.components.LabelError
@@ -39,9 +37,8 @@ import com.routinely.routinely.util.validators.CodeInputValid
 
 @Composable
 fun VerificationCodeScreen(
-    accountId: String,
-    onConfirmResetPasswordClicked: (ValidateCodeRequest) -> Unit,
-    navigateToSetNewPasswordScreen: (accountId: String, code: String) -> Unit,
+    onConfirmResetPasswordClicked: (code: String) -> Unit,
+    navigateToSetNewPasswordScreen: (code: String) -> Unit,
     codeStateValidation: (code: String) -> CodeInputValid,
     validateCodeResult: ValidateCodeResult
 ) {
@@ -127,11 +124,9 @@ fun VerificationCodeScreen(
         ) {
             VerificationCodeButton(
                 onConfirmCodeClick = {
-                    onConfirmResetPasswordClicked(
-                        ValidateCodeRequest(code, accountId = accountId)
-                    )
+                    onConfirmResetPasswordClicked(code)
                 },
-                isCodeValid = codeState == CodeInputValid.Valid,
+                isCodeValid = codeState == CodeInputValid.Valid && !showLoading,
             )
         }
     }
@@ -141,7 +136,7 @@ fun VerificationCodeScreen(
                 showApiErrors = false
                 showLoading = false
                 showFieldError = false
-                navigateToSetNewPasswordScreen(accountId, code)
+                navigateToSetNewPasswordScreen(code)
             }
             is ValidateCodeResult.Error -> {
                 apiErrorMessage = validateCodeResult.message

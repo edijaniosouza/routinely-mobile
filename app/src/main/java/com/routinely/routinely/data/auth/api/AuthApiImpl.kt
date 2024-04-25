@@ -1,6 +1,5 @@
 package com.routinely.routinely.data.auth.api
 
-import android.util.Log
 import com.routinely.routinely.R
 import com.routinely.routinely.data.auth.HttpRoutes
 import com.routinely.routinely.data.auth.extensions.toCreateAccountResult
@@ -21,6 +20,7 @@ import com.routinely.routinely.data.auth.model.ValidateCodeResult
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.ResponseException
 import io.ktor.client.request.post
+import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
@@ -70,36 +70,26 @@ internal class AuthApiImpl(
 
     override suspend fun validateCode(validateCodeRequest: ValidateCodeRequest): ValidateCodeResult {
         return try {
-            Log.i("testeLogin", "validateCode: $validateCodeRequest")
-            val t = client.post(HttpRoutes.VALIDATE_CODE) {
+            client.post(HttpRoutes.VALIDATE_CODE) {
                 setBody(validateCodeRequest)
                 contentType(ContentType.Application.Json)
             }.toValidateCodeResult()
-            Log.i("testeLogin", "retorno: $t")
-            return t
         } catch(e: ResponseException){
-            Log.i("testeLogin", "Erro 1: $e")
             handleValidateCodeError(e.response.status)
         } catch(e: Exception){
-            Log.i("testeLogin", "Erro 2: $e")
             handleValidateCodeError(HttpStatusCode(900, e.message ?: "Unknown Exception"))
         }
     }
 
     override suspend fun createNewPassword(createNewPasswordRequest: CreateNewPasswordRequest): CreateNewPasswordResult {
         return try {
-            Log.i("testeLogin", "validateCode: $createNewPasswordRequest")
-            val t = client.post(HttpRoutes.VALIDATE_CODE) {
+            client.put(HttpRoutes.CHANGE_PASSWORD) {
                 setBody(createNewPasswordRequest)
                 contentType(ContentType.Application.Json)
             }.toCreateNewPasswordResult()
-            Log.i("testeLogin", "retorno: $t")
-            return t
         } catch(e: ResponseException){
-            Log.i("testeLogin", "Erro 1: $e")
             handleCreateNewPasswordError(e.response.status)
         } catch(e: Exception){
-            Log.i("testeLogin", "Erro 2: $e")
             handleCreateNewPasswordError(HttpStatusCode(900, e.message ?: "Unknown Exception"))
         }
     }

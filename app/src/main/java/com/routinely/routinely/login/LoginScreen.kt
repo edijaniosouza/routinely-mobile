@@ -151,7 +151,6 @@ fun LoginScreen(
             }
             Spacer(modifier = Modifier .height(16.dp))
 
-            val loading = false
             Column(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
@@ -176,12 +175,6 @@ fun LoginScreen(
             }
 
         }
-
-//        LaunchedEffect(key1 = authenticated) {
-//            if(authenticated) {
-//                navigateToHomeScreen()
-//            }
-//        }
 
         LaunchedEffect(key1 = signInResult) {
             when(signInResult) {

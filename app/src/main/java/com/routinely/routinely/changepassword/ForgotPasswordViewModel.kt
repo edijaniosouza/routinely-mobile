@@ -38,7 +38,6 @@ class ForgotPasswordViewModel(
             _forgotPasswordResult.value = ForgotPasswordResult.Loading
             try{
                 _forgotPasswordResult.value = authApi.forgotPassword(forgotPasswordRequest)
-//                _forgotPasswordResult.value = ForgotPasswordResult.Success("0485c1e0-a08d-46fb-abd4-f64812b21efc")
             } catch (e: Exception) {
                 _forgotPasswordResult.value = ForgotPasswordResult.DefaultError
             }
